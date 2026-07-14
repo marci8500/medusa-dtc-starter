@@ -22,19 +22,8 @@ module.exports = defineConfig({
 
     databaseDriverOptions: {
       pool: {
-        min: Number.parseInt(process.env.DATABASE_POOL_MIN || "2", 10),
-        max: Number.parseInt(process.env.DATABASE_POOL_MAX || "10", 10),
-      },
-    },
-
-    databaseDriverOptions: {
-      pool: {
         min: databasePoolMin,
         max: databasePoolMax,
-
-        // Give migrations enough time to obtain a connection.
-        acquireTimeoutMillis: 120000,
-
         idleTimeoutMillis: 30000,
         reapIntervalMillis: 1000,
         createRetryIntervalMillis: 200,
