@@ -4,6 +4,8 @@ FROM node:20-bookworm-slim AS build
 
 WORKDIR /workspace
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        python3 \
@@ -16,24 +18,33 @@ RUN apt-get update \
 
 COPY . .
 
-# Install only the backend workspace and its dependencies.
-RUN pnpm install \
-    --filter @dtc/backend... \
-    --frozen-lockfile
+# Install the backend workspace and all dependencies required to build it.
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+    pnpm install \
+      --filter @dtc/backend... \
+      --frozen-lockfile
 
-# This value is embedded into the static Admin during the build.
+# Medusa embeds this URL into the Admin frontend during the build.
 ARG MEDUSA_BACKEND_URL
 ENV MEDUSA_BACKEND_URL=${MEDUSA_BACKEND_URL}
 ENV NODE_ENV=production
 
+# Prevent deployment of an Admin build with an empty backend URL.
+RUN test -n "${MEDUSA_BACKEND_URL}" \
+    || (echo "ERROR: MEDUSA_BACKEND_URL build argument is required" && exit 1)
+
 RUN pnpm --filter @dtc/backend build
 
-# Isolate Medusa's standalone production build.
+# Copy Medusa's generated standalone production server.
 RUN cp -R apps/backend/.medusa/server /server
 
 WORKDIR /server
 
-RUN pnpm install --prod --frozen-lockfile
+# The generated Medusa server doesn't include a pnpm lockfile.
+RUN --mount=type=cache,id=pnpm-production-store,target=/root/.local/share/pnpm/store \
+    pnpm install \
+      --prod \
+      --no-frozen-lockfile
 
 
 FROM node:20-bookworm-slim AS runtime
@@ -42,6 +53,7 @@ WORKDIR /server
 
 ENV NODE_ENV=production
 ENV PORT=9000
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
