@@ -5,8 +5,12 @@ import {
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd())
 
+const backendUrl = (
+  process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"
+).replace(/\/+$/, "")
+
 const databasePoolMin = Number.parseInt(
-  process.env.DATABASE_POOL_MIN || "2",
+  process.env.DATABASE_POOL_MIN || "1",
   10
 )
 
@@ -43,8 +47,27 @@ module.exports = defineConfig({
     },
   },
 
+  modules: [
+    {
+      resolve: "@medusajs/medusa/file",
+      options: {
+        providers: [
+          {
+            resolve: "@medusajs/medusa/file-local",
+            id: "local",
+            options: {
+              upload_dir: "/server/static",
+              private_upload_dir: "/server/static",
+              backend_url: `${backendUrl}/static`,
+            },
+          },
+        ],
+      },
+    },
+  ],
+
   admin: {
     disable: process.env.DISABLE_MEDUSA_ADMIN === "true",
-    backendUrl: process.env.MEDUSA_BACKEND_URL,
+    backendUrl,
   },
 })

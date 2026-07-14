@@ -4,7 +4,6 @@ FROM node:20-bookworm-slim AS build
 
 WORKDIR /workspace
 
-ENV NODE_ENV=production
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PNPM_HOME=/usr/local/share/pnpm
 ENV PATH=${PNPM_HOME}:${PATH}
@@ -21,40 +20,41 @@ RUN apt-get update \
 
 COPY . .
 
-# Install backend workspace dependencies.
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install \
       --filter @dtc/backend... \
       --frozen-lockfile
 
-# Embedded into the Medusa Admin build.
 ARG MEDUSA_BACKEND_URL
+
 ENV MEDUSA_BACKEND_URL=${MEDUSA_BACKEND_URL}
 
 RUN test -n "${MEDUSA_BACKEND_URL}" \
     || (echo "ERROR: MEDUSA_BACKEND_URL build argument is required" && exit 1)
 
+ENV NODE_ENV=production
+
 RUN pnpm --filter @dtc/backend build
 
-# Copy Medusa's standalone production server.
 RUN cp -R apps/backend/.medusa/server /server
 
 WORKDIR /server
 
-# Ensure the generated project also declares the Node-20-compatible pnpm version.
+# Pin pnpm in the generated standalone Medusa application.
 RUN node -e "\
 const fs = require('fs'); \
-const path = '/server/package.json'; \
-const pkg = JSON.parse(fs.readFileSync(path, 'utf8')); \
-pkg.packageManager = 'pnpm@10.11.1'; \
-fs.writeFileSync(path, JSON.stringify(pkg, null, 2) + '\n'); \
+const packagePath = '/server/package.json'; \
+const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8')); \
+packageJson.packageManager = 'pnpm@10.11.1'; \
+fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + '\n'); \
 "
 
-# The generated Medusa server has no lockfile.
 RUN --mount=type=cache,id=pnpm-production-store,target=/root/.local/share/pnpm/store \
     pnpm install \
       --prod \
       --no-frozen-lockfile
+
+RUN mkdir -p /server/static
 
 
 FROM node:20-bookworm-slim AS runtime
@@ -75,6 +75,10 @@ RUN apt-get update \
     && pnpm --version
 
 COPY --from=build --chown=node:node /server ./
+
+RUN mkdir -p /server/static \
+    && chown -R node:node /server/static \
+    && chmod 775 /server/static
 
 USER node
 
