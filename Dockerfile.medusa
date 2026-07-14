@@ -40,7 +40,7 @@ RUN cp -R apps/backend/.medusa/server /server
 
 WORKDIR /server
 
-# Pin pnpm in the generated standalone Medusa application.
+# Pin pnpm in the generated standalone Medusa application. Done to avoid conflicts with the pnpm version in the base image.
 RUN node -e "\
 const fs = require('fs'); \
 const packagePath = '/server/package.json'; \
