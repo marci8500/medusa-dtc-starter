@@ -1,0 +1,59 @@
+# syntax=docker/dockerfile:1.7
+
+FROM node:20-bookworm-slim AS build
+
+WORKDIR /workspace
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       python3 \
+       make \
+       g++ \
+       ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && corepack enable \
+    && corepack prepare pnpm@10.11.1 --activate
+
+COPY . .
+
+# Install only the backend workspace and its dependencies.
+RUN pnpm install \
+    --filter @dtc/backend... \
+    --frozen-lockfile
+
+# This value is embedded into the static Admin during the build.
+ARG MEDUSA_BACKEND_URL
+ENV MEDUSA_BACKEND_URL=${MEDUSA_BACKEND_URL}
+ENV NODE_ENV=production
+
+RUN pnpm --filter @dtc/backend build
+
+# Isolate Medusa's standalone production build.
+RUN cp -R apps/backend/.medusa/server /server
+
+WORKDIR /server
+
+RUN pnpm install --prod --frozen-lockfile
+
+
+FROM node:20-bookworm-slim AS runtime
+
+WORKDIR /server
+
+ENV NODE_ENV=production
+ENV PORT=9000
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && corepack enable \
+    && corepack prepare pnpm@10.11.1 --activate
+
+COPY --from=build --chown=node:node /server ./
+
+USER node
+
+EXPOSE 9000
+
+CMD ["pnpm", "start"]
