@@ -4,7 +4,10 @@ FROM node:20-bookworm-slim AS build
 
 WORKDIR /workspace
 
+ENV NODE_ENV=production
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PNPM_HOME=/usr/local/share/pnpm
+ENV PATH=${PNPM_HOME}:${PATH}
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -13,34 +16,41 @@ RUN apt-get update \
        g++ \
        ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
-    && corepack enable \
-    && corepack prepare pnpm@10.11.1 --activate
+    && npm install --global pnpm@10.11.1 \
+    && pnpm --version
 
 COPY . .
 
-# Install the backend workspace and all dependencies required to build it.
+# Install backend workspace dependencies.
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install \
       --filter @dtc/backend... \
       --frozen-lockfile
 
-# Medusa embeds this URL into the Admin frontend during the build.
+# Embedded into the Medusa Admin build.
 ARG MEDUSA_BACKEND_URL
 ENV MEDUSA_BACKEND_URL=${MEDUSA_BACKEND_URL}
-ENV NODE_ENV=production
 
-# Prevent deployment of an Admin build with an empty backend URL.
 RUN test -n "${MEDUSA_BACKEND_URL}" \
     || (echo "ERROR: MEDUSA_BACKEND_URL build argument is required" && exit 1)
 
 RUN pnpm --filter @dtc/backend build
 
-# Copy Medusa's generated standalone production server.
+# Copy Medusa's standalone production server.
 RUN cp -R apps/backend/.medusa/server /server
 
 WORKDIR /server
 
-# The generated Medusa server doesn't include a pnpm lockfile.
+# Ensure the generated project also declares the Node-20-compatible pnpm version.
+RUN node -e "\
+const fs = require('fs'); \
+const path = '/server/package.json'; \
+const pkg = JSON.parse(fs.readFileSync(path, 'utf8')); \
+pkg.packageManager = 'pnpm@10.11.1'; \
+fs.writeFileSync(path, JSON.stringify(pkg, null, 2) + '\n'); \
+"
+
+# The generated Medusa server has no lockfile.
 RUN --mount=type=cache,id=pnpm-production-store,target=/root/.local/share/pnpm/store \
     pnpm install \
       --prod \
@@ -54,13 +64,15 @@ WORKDIR /server
 ENV NODE_ENV=production
 ENV PORT=9000
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PNPM_HOME=/usr/local/share/pnpm
+ENV PATH=${PNPM_HOME}:${PATH}
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
-    && corepack enable \
-    && corepack prepare pnpm@10.11.1 --activate
+    && npm install --global pnpm@10.11.1 \
+    && pnpm --version
 
 COPY --from=build --chown=node:node /server ./
 
