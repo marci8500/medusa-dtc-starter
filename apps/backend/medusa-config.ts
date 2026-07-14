@@ -5,10 +5,34 @@ import {
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd())
 
+const databasePoolMin = Number.parseInt(
+  process.env.DATABASE_POOL_MIN || "2",
+  10
+)
+
+const databasePoolMax = Number.parseInt(
+  process.env.DATABASE_POOL_MAX || "10",
+  10
+)
+
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
     redisUrl: process.env.REDIS_URL,
+
+    databaseDriverOptions: {
+      pool: {
+        min: databasePoolMin,
+        max: databasePoolMax,
+
+        // Give migrations enough time to obtain a connection.
+        acquireTimeoutMillis: 120000,
+
+        idleTimeoutMillis: 30000,
+        reapIntervalMillis: 1000,
+        createRetryIntervalMillis: 200,
+      },
+    },
 
     workerMode: (
       process.env.MEDUSA_WORKER_MODE || "shared"
