@@ -6,7 +6,11 @@ import {
 } from "@medusajs/framework/utils"
 import {
   buildCodFeeMetadata,
-  parseCodFee,
+  normalizeCodFeeConfigInput,
+  parseCodFeeConfig,
+  type CodFeeConfigInput,
+  type CodFeeMode,
+  type CodFeeTier,
 } from "../../../utils/cod-fee"
 
 export type CodFeeShippingOptionDTO = {
@@ -15,7 +19,9 @@ export type CodFeeShippingOptionDTO = {
   type_code: string | null
   type_label: string | null
   provider_id: string | null
+  cod_fee_mode: CodFeeMode
   cod_fee: number | null
+  cod_fee_tiers: CodFeeTier[]
 }
 
 type ShippingOptionSource = {
@@ -30,15 +36,27 @@ type ShippingOptionSource = {
 }
 
 function toDto(option: ShippingOptionSource): CodFeeShippingOptionDTO {
+  const config = parseCodFeeConfig(option.metadata)
   return {
     id: option.id,
     name: option.name ?? option.id,
     type_code: option.type?.code ?? null,
     type_label: option.type?.label ?? null,
     provider_id: option.provider_id ?? null,
-    cod_fee: parseCodFee(option.metadata),
+    cod_fee_mode: config.mode,
+    cod_fee: config.flat_fee,
+    cod_fee_tiers: config.tiers,
   }
 }
+
+const SHIPPING_OPTION_FIELDS = [
+  "id",
+  "name",
+  "provider_id",
+  "metadata",
+  "type.code",
+  "type.label",
+] as const
 
 export async function listCodFeeShippingOptions(
   container: MedusaContainer
@@ -47,14 +65,7 @@ export async function listCodFeeShippingOptions(
 
   const { data } = await query.graph({
     entity: "shipping_option",
-    fields: [
-      "id",
-      "name",
-      "provider_id",
-      "metadata",
-      "type.code",
-      "type.label",
-    ],
+    fields: [...SHIPPING_OPTION_FIELDS],
   })
 
   const shipping_options = ((data ?? []) as ShippingOptionSource[])
@@ -67,20 +78,13 @@ export async function listCodFeeShippingOptions(
 export async function updateCodFeeForShippingOption(
   container: MedusaContainer,
   shippingOptionId: string,
-  codFee: number | null
+  input: CodFeeConfigInput
 ): Promise<CodFeeShippingOptionDTO> {
   const query = container.resolve(ContainerRegistrationKeys.QUERY)
 
   const { data } = await query.graph({
     entity: "shipping_option",
-    fields: [
-      "id",
-      "name",
-      "provider_id",
-      "metadata",
-      "type.code",
-      "type.label",
-    ],
+    fields: [...SHIPPING_OPTION_FIELDS],
     filters: { id: shippingOptionId },
   })
 
@@ -92,33 +96,27 @@ export async function updateCodFeeForShippingOption(
     )
   }
 
-  if (codFee != null && (!Number.isFinite(codFee) || codFee < 0)) {
+  let config
+  try {
+    config = normalizeCodFeeConfigInput(input)
+  } catch (error) {
     throw new MedusaError(
       MedusaError.Types.INVALID_DATA,
-      "cod_fee must be a non-negative number or null"
+      error instanceof Error ? error.message : String(error)
     )
   }
-
-  const normalizedFee = codFee != null && codFee > 0 ? codFee : null
 
   const fulfillment = container.resolve(Modules.FULFILLMENT)
   await fulfillment.upsertShippingOptions([
     {
       id: shippingOptionId,
-      metadata: buildCodFeeMetadata(option.metadata, normalizedFee),
+      metadata: buildCodFeeMetadata(option.metadata, config),
     } as { id: string },
   ])
 
   const { data: refreshed } = await query.graph({
     entity: "shipping_option",
-    fields: [
-      "id",
-      "name",
-      "provider_id",
-      "metadata",
-      "type.code",
-      "type.label",
-    ],
+    fields: [...SHIPPING_OPTION_FIELDS],
     filters: { id: shippingOptionId },
   })
 

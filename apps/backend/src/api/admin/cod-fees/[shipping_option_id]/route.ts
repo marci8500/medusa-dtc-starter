@@ -1,26 +1,23 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+import type { CodFeeConfigInput } from "../../../../utils/cod-fee"
 import { updateCodFeeForShippingOption } from "../helpers"
-
-type UpdateCodFeeBody = {
-  cod_fee: number | null
-}
 
 /**
  * POST /admin/cod-fees/:shipping_option_id
  *
- * Updates metadata.cod_fee on a shipping option (preserves other metadata).
+ * Updates COD fee config on a shipping option (preserves other metadata).
  */
 export const POST = async (
-  req: MedusaRequest<UpdateCodFeeBody>,
+  req: MedusaRequest<CodFeeConfigInput>,
   res: MedusaResponse
 ) => {
   const { shipping_option_id } = req.params
-  const { cod_fee } = req.validatedBody
+  const body = req.validatedBody
 
   const shipping_option = await updateCodFeeForShippingOption(
     req.scope,
     shipping_option_id,
-    cod_fee
+    body
   )
 
   res.json({ shipping_option })

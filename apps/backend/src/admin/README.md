@@ -10,7 +10,12 @@ Sidebar page at `/app/leads` listing incomplete carts with a captured phone (`me
 
 ## COD fees (Utánvéti díjak)
 
-Sidebar page at `/app/cod-fees` to set `metadata.cod_fee` per shipping option (courier). When the customer selects Cash on Delivery (`pp_system_default`) and a shipping option with a fee, the backend adds a “Cash on Delivery fee” line item to the cart.
+Sidebar page at `/app/cod-fees` to configure COD fees per shipping option (courier):
+
+- **Flat** — single `metadata.cod_fee`
+- **Tiers** — `metadata.cod_fee_mode = "tiers"` and `metadata.cod_fee_tiers` brackets on the COD base amount (items + shipping, excluding the COD fee line)
+
+When the customer selects Cash on Delivery (`pp_system_default`) and a shipping option with a fee, the backend adds a “Cash on Delivery fee” line item to the cart.
 
 ## Foxpost locker (order widget)
 

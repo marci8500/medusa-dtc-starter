@@ -56,7 +56,7 @@
   },
   "codFees": {
     "title": "COD fees",
-    "description": "Set the Cash on Delivery fee charged for each shipping option (courier). Leave empty or 0 for no fee.",
+    "description": "Set Cash on Delivery fees per shipping option (courier). Use a flat fee, or amount-based tiers on the COD total (items + shipping, excluding the COD fee).",
     "refresh": "Refresh",
     "loading": "Loading…",
     "loadError": "Could not load shipping options.",
@@ -66,9 +66,22 @@
     "saved": "COD fee saved",
     "saveError": "Could not save COD fee.",
     "invalidFee": "Enter a valid non-negative number.",
+    "invalidTier": "Enter valid tier rows: fee is required; max amount may be empty for the top bracket.",
+    "modeFlat": "Flat",
+    "modeTiers": "Tiers",
+    "tiersSummary": "{{count}} tier(s)",
+    "editTiers": "Edit tiers",
+    "hideTiers": "Hide",
+    "tiersHelp": "Brackets apply to the COD amount (cart items + shipping, without the COD fee). Leave max amount empty for “and above”.",
+    "tierMaxAmount": "Up to amount",
+    "tierFee": "Fee",
+    "tierMaxPlaceholder": "and above",
+    "addTier": "Add tier",
+    "removeTier": "Remove",
     "columns": {
       "name": "Shipping option",
       "type": "Type",
+      "mode": "Mode",
       "fee": "COD fee",
       "actions": ""
     }

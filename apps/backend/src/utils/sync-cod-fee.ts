@@ -11,16 +11,22 @@ import {
 import {
   COD_FEE_LINE_METADATA_KEY,
   COD_FEE_LINE_TITLE,
+  computeCodBaseAmount,
   findCodFeeLineItem,
   isCodPaymentProvider,
-  parseCodFee,
+  parseCodFeeConfig,
+  resolveCodFeeFromConfig,
 } from "./cod-fee"
 
 type CartForCodSync = {
   id: string
+  shipping_total?: number | string | null
   items?: Array<{
     id: string
     unit_price?: number | string | null
+    quantity?: number | string | null
+    total?: number | string | null
+    subtotal?: number | string | null
     metadata?: Record<string, unknown> | null
   }> | null
   shipping_methods?: Array<{
@@ -67,18 +73,17 @@ function unitPriceEquals(
   }
 }
 
-async function resolveShippingOptionCodFee(
+async function resolveShippingOptionMetadata(
   container: MedusaContainer,
   cart: CartForCodSync
-): Promise<number | null> {
+): Promise<Record<string, unknown> | null> {
   const method = cart.shipping_methods?.[0]
   if (!method) {
     return null
   }
 
-  const fromLink = parseCodFee(method.shipping_option?.metadata)
-  if (fromLink != null) {
-    return fromLink
+  if (method.shipping_option?.metadata) {
+    return method.shipping_option.metadata
   }
 
   const optionId = method.shipping_option_id ?? method.shipping_option?.id
@@ -97,7 +102,7 @@ async function resolveShippingOptionCodFee(
     | { metadata?: Record<string, unknown> | null }
     | undefined
 
-  return parseCodFee(option?.metadata)
+  return option?.metadata ?? null
 }
 
 /**
@@ -116,8 +121,12 @@ export async function syncCodFeeForCart(
     entity: "cart",
     fields: [
       "id",
+      "shipping_total",
       "items.id",
       "items.unit_price",
+      "items.quantity",
+      "items.total",
+      "items.subtotal",
       "items.metadata",
       "shipping_methods.shipping_option_id",
       "shipping_methods.shipping_option.id",
@@ -139,9 +148,17 @@ export async function syncCodFeeForCart(
       : activeProviderId(cart)
 
   const isCod = isCodPaymentProvider(providerId)
-  const desiredFee = isCod
-    ? await resolveShippingOptionCodFee(container, cart)
-    : null
+  let desiredFee: number | null = null
+
+  if (isCod) {
+    const metadata = await resolveShippingOptionMetadata(container, cart)
+    const config = parseCodFeeConfig(metadata)
+    const codBase = computeCodBaseAmount({
+      items: cart.items,
+      shipping_total: cart.shipping_total,
+    })
+    desiredFee = resolveCodFeeFromConfig(config, codBase)
+  }
 
   const existing = findCodFeeLineItem(cart.items)
 

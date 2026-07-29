@@ -28,7 +28,17 @@ export const UpdateLeadStatusSchema = z.object({
 })
 
 export const UpdateCodFeeSchema = z.object({
-  cod_fee: z.union([z.number(), z.null()]),
+  mode: z.enum(["flat", "tiers"]),
+  cod_fee: z.union([z.number(), z.null()]).optional().default(null),
+  cod_fee_tiers: z
+    .array(
+      z.object({
+        max_amount: z.union([z.number(), z.null()]),
+        fee: z.number(),
+      })
+    )
+    .optional()
+    .default([]),
 })
 
 /**

@@ -56,7 +56,7 @@
   },
   "codFees": {
     "title": "Utánvéti díjak",
-    "description": "Állítsd be az utánvéti díjat szállítási opció (futár) szerint. Üresen hagyva vagy 0-val nincs díj.",
+    "description": "Állítsd be az utánvéti díjat szállítási opció (futár) szerint. Lehet fix díj, vagy összegsávok az utánvét összegére (tételek + szállítás, a díj nélkül).",
     "refresh": "Frissítés",
     "loading": "Betöltés…",
     "loadError": "Nem sikerült betölteni a szállítási opciókat.",
@@ -66,9 +66,22 @@
     "saved": "Utánvéti díj mentve",
     "saveError": "Nem sikerült menteni az utánvéti díjat.",
     "invalidFee": "Adj meg egy érvényes, nem negatív számot.",
+    "invalidTiers": "Érvénytelen sávok: a díj kötelező; a felső összeg üresen hagyható („és felette”).",
+    "modeFlat": "Fix díj",
+    "modeTiers": "Sávos",
+    "tiersSummary": "{{count}} sáv",
+    "editTiers": "Sávok szerkesztése",
+    "hideTiers": "Elrejtés",
+    "tiersHelp": "A sávok az utánvét összegére vonatkoznak (kosár tételek + szállítás, az utánvéti díj nélkül). Üres felső összeg = „és felette”.",
+    "tierMaxAmount": "Összegig",
+    "tierFee": "Díj",
+    "tierMaxPlaceholder": "és felette",
+    "addTier": "Sáv hozzáadása",
+    "removeTier": "Törlés",
     "columns": {
       "name": "Szállítási opció",
       "type": "Típus",
+      "mode": "Mód",
       "fee": "Utánvéti díj",
       "actions": ""
     }
