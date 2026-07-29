@@ -49,17 +49,15 @@ async function syncCodFeeBeforePaymentSession(
   }
 
   const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
-  const { data: carts } = await query.graph({
-    entity: "cart",
-    fields: ["id"],
-    filters: {
-      payment_collection: {
-        id: paymentCollectionId,
-      },
-    },
+  const { data: paymentCollections } = await query.graph({
+    entity: "payment_collection",
+    fields: ["id", "cart.id"],
+    filters: { id: paymentCollectionId },
   })
 
-  const cartId = (carts?.[0] as { id?: string } | undefined)?.id
+  const cartId = (
+    paymentCollections?.[0] as { cart?: { id?: string } | null } | undefined
+  )?.cart?.id
 
   if (cartId) {
     await syncCodFeeForCart(req.scope, cartId, { providerId })

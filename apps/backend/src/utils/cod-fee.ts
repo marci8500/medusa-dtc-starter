@@ -39,7 +39,7 @@ export function findCodFeeLineItem<
 }
 
 export function buildCodFeeMetadata(
-  existing?: Record<string, unknown> | null,
+  existing: Record<string, unknown> | null | undefined,
   codFee: number | null
 ): Record<string, unknown> {
   const next = { ...(existing ?? {}) }
