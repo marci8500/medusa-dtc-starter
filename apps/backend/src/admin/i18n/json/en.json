@@ -4,6 +4,7 @@
     "description": "Incomplete carts where a phone number was captured at checkout.",
     "searchPlaceholder": "Search by phone or email…",
     "search": "Search",
+    "filterAllStatuses": "All statuses",
     "empty": "No lead carts",
     "loading": "Loading…",
     "loadError": "Could not load lead carts.",
@@ -18,14 +19,32 @@
     "shippingAddress": "Shipping address",
     "billingAddress": "Billing address",
     "close": "Close",
+    "statusLabel": "Status",
+    "savingStatus": "Saving…",
+    "statusSaved": "Status updated",
+    "statusSaveError": "Could not update status.",
+    "convert": "Convert to draft order",
+    "converting": "Converting…",
+    "convertConfirm": "Create a draft order from this cart and remove it from leads?",
+    "convertSuccess": "Draft order created: {{id}}",
+    "convertError": "Could not convert lead to draft order.",
+    "openDraftOrder": "Open draft order",
     "columns": {
       "phone": "Phone",
       "email": "Email",
       "name": "Name",
+      "status": "Status",
       "items": "Items",
       "total": "Total",
       "updatedAt": "Updated",
       "cartId": "Cart ID"
+    },
+    "statuses": {
+      "waiting": "Waiting",
+      "no_answer_1x": "No answer (1×)",
+      "no_answer_2x": "No answer (2×)",
+      "wrong_number": "Wrong number",
+      "failed": "Failed"
     }
   }
 }

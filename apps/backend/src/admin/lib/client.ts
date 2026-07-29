@@ -18,14 +18,24 @@ export async function adminFetch<T>(
   }
 
   const { query: _query, ...rest } = init ?? {}
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    ...(rest.headers as Record<string, string> | undefined),
+  }
+
+  if (
+    rest.body &&
+    typeof rest.body === "string" &&
+    !headers["Content-Type"] &&
+    !headers["content-type"]
+  ) {
+    headers["Content-Type"] = "application/json"
+  }
 
   const response = await fetch(url.pathname + url.search, {
     credentials: "include",
     ...rest,
-    headers: {
-      Accept: "application/json",
-      ...(rest.headers ?? {}),
-    },
+    headers,
   })
 
   if (!response.ok) {
@@ -33,6 +43,10 @@ export async function adminFetch<T>(
     throw new Error(
       body || `Request failed: ${response.status} ${response.statusText}`
     )
+  }
+
+  if (response.status === 204) {
+    return undefined as T
   }
 
   return (await response.json()) as T

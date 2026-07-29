@@ -7,9 +7,24 @@
  * Optionally mirror the phone on shipping/billing address.phone.
  * Completed carts (completed_at set or linked order) are excluded.
  *
- * Stable key — do not rename without coordinating storefronts:
+ * Stable keys — do not rename without coordinating storefronts:
  */
 export const LEAD_PHONE_METADATA_KEY = "lead_phone" as const
+export const LEAD_STATUS_METADATA_KEY = "lead_status" as const
+export const LEAD_STATUS_UPDATED_AT_METADATA_KEY =
+  "lead_status_updated_at" as const
+
+export const LEAD_STATUSES = [
+  "waiting",
+  "no_answer_1x",
+  "no_answer_2x",
+  "wrong_number",
+  "failed",
+] as const
+
+export type LeadStatus = (typeof LEAD_STATUSES)[number]
+
+export const DEFAULT_LEAD_STATUS: LeadStatus = "waiting"
 
 /** Name / address placeholders used when only a phone is known yet */
 export const PLACEHOLDER_TEXT_VALUES = new Set([
@@ -28,6 +43,9 @@ const LEAD_CART_FIELDS = [
   "id",
   "email",
   "currency_code",
+  "region_id",
+  "sales_channel_id",
+  "customer_id",
   "metadata",
   "created_at",
   "updated_at",
@@ -42,7 +60,15 @@ const LEAD_CART_FIELDS = [
   "items.quantity",
   "items.thumbnail",
   "items.unit_price",
+  "items.variant_id",
   "items.variant_sku",
+  "items.product_id",
+  "items.product_title",
+  "items.variant_title",
+  "items.requires_shipping",
+  "items.is_discountable",
+  "items.is_tax_inclusive",
+  "items.metadata",
   "order.id",
 ] as const
 
@@ -67,6 +93,9 @@ export type LeadCartSource = {
   id: string
   email?: string | null
   currency_code?: string | null
+  region_id?: string | null
+  sales_channel_id?: string | null
+  customer_id?: string | null
   metadata?: Record<string, unknown> | null
   created_at?: string | Date | null
   updated_at?: string | Date | null
@@ -82,7 +111,15 @@ export type LeadCartSource = {
     quantity?: number | null
     thumbnail?: string | null
     unit_price?: number | string | null
+    variant_id?: string | null
     variant_sku?: string | null
+    product_id?: string | null
+    product_title?: string | null
+    variant_title?: string | null
+    requires_shipping?: boolean | null
+    is_discountable?: boolean | null
+    is_tax_inclusive?: boolean | null
+    metadata?: Record<string, unknown> | null
   }> | null
   order?: { id?: string | null } | null
 }
@@ -92,6 +129,7 @@ export type LeadCartDTO = {
   phone: string | null
   email: string | null
   customer_name: string | null
+  status: LeadStatus
   item_count: number
   items_summary: string | null
   total: number | null
@@ -102,6 +140,18 @@ export type LeadCartDTO = {
   billing_address: LeadAddress
   items: NonNullable<LeadCartSource["items"]>
   metadata: Record<string, unknown> | null
+}
+
+export function isLeadStatus(value: unknown): value is LeadStatus {
+  return (
+    typeof value === "string" &&
+    (LEAD_STATUSES as readonly string[]).includes(value)
+  )
+}
+
+export function resolveLeadStatus(cart: LeadCartSource): LeadStatus {
+  const raw = cart.metadata?.[LEAD_STATUS_METADATA_KEY]
+  return isLeadStatus(raw) ? raw : DEFAULT_LEAD_STATUS
 }
 
 function asTrimmed(value?: string | null): string | null {
@@ -231,6 +281,7 @@ export function toLeadCartDTO(cart: LeadCartSource): LeadCartDTO {
     phone: resolveLeadPhone(cart),
     email: asTrimmed(cart.email),
     customer_name: resolveCustomerName(cart),
+    status: resolveLeadStatus(cart),
     item_count: itemCount,
     items_summary: itemsSummary,
     total,
@@ -241,6 +292,17 @@ export function toLeadCartDTO(cart: LeadCartSource): LeadCartDTO {
     billing_address: cart.billing_address ?? null,
     items,
     metadata: (cart.metadata as Record<string, unknown> | null) ?? null,
+  }
+}
+
+export function buildLeadStatusMetadata(
+  existing: Record<string, unknown> | null | undefined,
+  status: LeadStatus
+): Record<string, unknown> {
+  return {
+    ...(existing ?? {}),
+    [LEAD_STATUS_METADATA_KEY]: status,
+    [LEAD_STATUS_UPDATED_AT_METADATA_KEY]: new Date().toISOString(),
   }
 }
 

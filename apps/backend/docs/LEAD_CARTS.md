@@ -1,6 +1,6 @@
 # Lead carts (Admin)
 
-Read-only Admin view of incomplete checkout carts that captured a phone number
+Admin view of incomplete checkout carts that captured a phone number
 (“leads”). Works with any storefront that follows the contract below.
 
 ## Menu
@@ -20,6 +20,15 @@ To appear in this list, a cart must:
 2. Have a phone via either:
    - `metadata.lead_phone` (**stable key — keep this name**), or
    - `shipping_address.phone` / `billing_address.phone` (non-empty, not a placeholder like `—`).
+
+### Lead status (Admin / optional storefront)
+
+| Metadata key | Values | Default |
+| --- | --- | --- |
+| `lead_status` | `waiting`, `no_answer_1x`, `no_answer_2x`, `wrong_number`, `failed` | `waiting` (if missing) |
+| `lead_status_updated_at` | ISO timestamp | set when Admin changes status |
+
+Storefronts do **not** need to set `lead_status`; Admin defaults to waiting.
 
 Optional display fields (shown when present; placeholders ignored):
 
@@ -60,24 +69,38 @@ easy to filter later.
 | --- | --- | --- |
 | `GET` | `/admin/leads` | Admin session, JWT, or secret API key |
 | `GET` | `/admin/leads/:id` | same |
+| `POST` | `/admin/leads/:id/status` | same — body `{ "status": "waiting" \| ... }` |
+| `POST` | `/admin/leads/:id/convert` | same — creates draft order, completes cart |
 
 Query params for list:
 
 - `limit` / `offset` — pagination (default limit 20)
 - `q` — search phone, email, name, or cart id
+- `status` — filter by lead status
 
-Response shape:
+Response shape (list):
 
 ```json
 {
-  "leads": [ /* LeadCartDTO */ ],
+  "leads": [ /* LeadCartDTO including status */ ],
   "count": 0,
   "limit": 20,
   "offset": 0
 }
 ```
 
-Read-only: these routes never update or delete carts.
+### Convert to draft order
+
+`POST /admin/leads/:id/convert`:
+
+1. Creates a Medusa **draft order** from the cart (items, addresses, email, region, sales channel).
+2. Sets the cart’s `completed_at` so the lead **disappears** from Lead kosarak.
+3. Returns `{ draft_order_id, order_id, lead }`.
+
+Finish payment / shipping / convert-to-order in the native **Orders** Admin UI
+(draft orders are orders with `is_draft_order: true`). This path does **not** run
+full storefront checkout (`completeCartWorkflow`), so incomplete phone leads can
+still convert.
 
 ## Deploy / rebuild
 
@@ -91,10 +114,11 @@ Admin UI extensions are compiled with the Medusa Admin build.
 ## Verify
 
 1. Storefront: new cart → enter phone (~6+ chars) → blur / wait ~1s.
-2. Admin → **Lead kosarak** → row appears (newest first).
-3. Fill name/email and save again → row updates.
-4. Complete checkout → cart leaves the list (`completed_at` / order link).
+2. Admin → **Lead kosarak** → row appears (newest first), status **Waiting**.
+3. Change status in the drawer → row updates / filter works.
+4. **Convert to draft order** → draft order created, lead leaves the list.
+5. Storefront complete checkout (without Admin convert) → cart also leaves the list.
 
-## Out of scope (v1)
+## Out of scope
 
-Abandoned-cart email, SMS, auto-discounts — display only.
+Abandoned-cart email, SMS, auto-discounts, status audit history.

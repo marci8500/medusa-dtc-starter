@@ -6,7 +6,7 @@ You can extend the Medusa Admin to add widgets and new pages. Your customization
 
 ## Lead kosarak (Lead carts)
 
-Sidebar page at `/app/leads` listing incomplete carts with a captured phone (`metadata.lead_phone` or address phone). See [docs/LEAD_CARTS.md](../docs/LEAD_CARTS.md) for the storefront contract, Admin API, and deploy notes.
+Sidebar page at `/app/leads` listing incomplete carts with a captured phone (`metadata.lead_phone` or address phone). Supports status updates and convert-to-draft-order. See [docs/LEAD_CARTS.md](../docs/LEAD_CARTS.md) for the storefront contract, Admin API, and deploy notes.
 
 ## Example: Create a Widget
 

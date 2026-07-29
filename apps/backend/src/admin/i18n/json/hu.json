@@ -4,6 +4,7 @@
     "description": "Félbehagyott kosarak, ahol a vásárló megadta a telefonszámát a pénztárnál.",
     "searchPlaceholder": "Keresés telefonra vagy e-mailre…",
     "search": "Keresés",
+    "filterAllStatuses": "Minden státusz",
     "empty": "Nincs lead kosár",
     "loading": "Betöltés…",
     "loadError": "Nem sikerült betölteni a lead kosarakat.",
@@ -18,14 +19,32 @@
     "shippingAddress": "Szállítási cím",
     "billingAddress": "Számlázási cím",
     "close": "Bezárás",
+    "statusLabel": "Státusz",
+    "savingStatus": "Mentés…",
+    "statusSaved": "Státusz frissítve",
+    "statusSaveError": "Nem sikerült frissíteni a státuszt.",
+    "convert": "Átalakítás draft orderré",
+    "converting": "Átalakítás…",
+    "convertConfirm": "Létrejön egy draft order ebből a kosárból, és a lead eltűnik a listából. Folytatod?",
+    "convertSuccess": "Draft order létrehozva: {{id}}",
+    "convertError": "Nem sikerült draft orderré alakítani.",
+    "openDraftOrder": "Draft order megnyitása",
     "columns": {
       "phone": "Telefonszám",
       "email": "E-mail",
       "name": "Név",
+      "status": "Státusz",
       "items": "Tételek",
       "total": "Összeg",
       "updatedAt": "Utolsó frissítés",
       "cartId": "Cart ID"
+    },
+    "statuses": {
+      "waiting": "Várakozik",
+      "no_answer_1x": "Nem veszi fel (1×)",
+      "no_answer_2x": "Nem veszi fel (2×)",
+      "wrong_number": "Rossz szám",
+      "failed": "Sikertelen"
     }
   }
 }
