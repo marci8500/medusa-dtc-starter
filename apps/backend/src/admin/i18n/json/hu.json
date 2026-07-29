@@ -1,0 +1,31 @@
+{
+  "leads": {
+    "title": "Lead kosarak",
+    "description": "Félbehagyott kosarak, ahol a vásárló megadta a telefonszámát a pénztárnál.",
+    "searchPlaceholder": "Keresés telefonra vagy e-mailre…",
+    "search": "Keresés",
+    "empty": "Nincs lead kosár",
+    "loading": "Betöltés…",
+    "loadError": "Nem sikerült betölteni a lead kosarakat.",
+    "retry": "Újra",
+    "prev": "Előző",
+    "next": "Következő",
+    "pageOf": "{{page}}. / {{pages}}. oldal",
+    "paginationEmpty": "0 lead",
+    "paginationRange": "{{from}}–{{to}} / {{count}}",
+    "detailsTitle": "Lead kosár részletei",
+    "itemsHeading": "Tételek",
+    "shippingAddress": "Szállítási cím",
+    "billingAddress": "Számlázási cím",
+    "close": "Bezárás",
+    "columns": {
+      "phone": "Telefonszám",
+      "email": "E-mail",
+      "name": "Név",
+      "items": "Tételek",
+      "total": "Összeg",
+      "updatedAt": "Utolsó frissítés",
+      "cartId": "Cart ID"
+    }
+  }
+}

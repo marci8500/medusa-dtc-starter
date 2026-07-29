@@ -4,6 +4,10 @@ You can extend the Medusa Admin to add widgets and new pages. Your customization
 
 > Learn more about Admin Extensions in [this documentation](https://docs.medusajs.com/learn/fundamentals/admin).
 
+## Lead kosarak (Lead carts)
+
+Sidebar page at `/app/leads` listing incomplete carts with a captured phone (`metadata.lead_phone` or address phone). See [docs/LEAD_CARTS.md](../docs/LEAD_CARTS.md) for the storefront contract, Admin API, and deploy notes.
+
 ## Example: Create a Widget
 
 A widget is a React component that can be injected into an existing page in the admin dashboard.

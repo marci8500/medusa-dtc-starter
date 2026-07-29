@@ -1,0 +1,31 @@
+{
+  "leads": {
+    "title": "Lead carts",
+    "description": "Incomplete carts where a phone number was captured at checkout.",
+    "searchPlaceholder": "Search by phone or email…",
+    "search": "Search",
+    "empty": "No lead carts",
+    "loading": "Loading…",
+    "loadError": "Could not load lead carts.",
+    "retry": "Retry",
+    "prev": "Previous",
+    "next": "Next",
+    "pageOf": "Page {{page}} / {{pages}}",
+    "paginationEmpty": "0 leads",
+    "paginationRange": "{{from}}–{{to}} of {{count}}",
+    "detailsTitle": "Lead cart details",
+    "itemsHeading": "Line items",
+    "shippingAddress": "Shipping address",
+    "billingAddress": "Billing address",
+    "close": "Close",
+    "columns": {
+      "phone": "Phone",
+      "email": "Email",
+      "name": "Name",
+      "items": "Items",
+      "total": "Total",
+      "updatedAt": "Updated",
+      "cartId": "Cart ID"
+    }
+  }
+}
