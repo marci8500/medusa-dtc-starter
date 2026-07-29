@@ -46,5 +46,31 @@
       "wrong_number": "Wrong number",
       "failed": "Failed"
     }
+  },
+  "foxpost": {
+    "title": "Foxpost locker",
+    "lockerName": "Locker name",
+    "lockerAddress": "Locker address",
+    "lockerId": "Locker ID",
+    "placeId": "Place ID"
+  },
+  "codFees": {
+    "title": "COD fees",
+    "description": "Set the Cash on Delivery fee charged for each shipping option (courier). Leave empty or 0 for no fee.",
+    "refresh": "Refresh",
+    "loading": "Loading…",
+    "loadError": "Could not load shipping options.",
+    "retry": "Retry",
+    "empty": "No shipping options found.",
+    "save": "Save",
+    "saved": "COD fee saved",
+    "saveError": "Could not save COD fee.",
+    "invalidFee": "Enter a valid non-negative number.",
+    "columns": {
+      "name": "Shipping option",
+      "type": "Type",
+      "fee": "COD fee",
+      "actions": ""
+    }
   }
 }

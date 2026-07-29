@@ -8,6 +8,14 @@ You can extend the Medusa Admin to add widgets and new pages. Your customization
 
 Sidebar page at `/app/leads` listing incomplete carts with a captured phone (`metadata.lead_phone` or address phone). Supports status updates and convert-to-draft-order. See [docs/LEAD_CARTS.md](../docs/LEAD_CARTS.md) for the storefront contract, Admin API, and deploy notes.
 
+## COD fees (Utánvéti díjak)
+
+Sidebar page at `/app/cod-fees` to set `metadata.cod_fee` per shipping option (courier). When the customer selects Cash on Delivery (`pp_system_default`) and a shipping option with a fee, the backend adds a “Cash on Delivery fee” line item to the cart.
+
+## Foxpost locker (order widget)
+
+On order details (sidebar), a **Foxpost locker / Foxpost automata** widget shows `foxpost_locker_*` metadata when present. Hidden for non-Foxpost orders. An `order.placed` subscriber also copies those keys from the cart if they were missing on the order.
+
 ## Example: Create a Widget
 
 A widget is a React component that can be injected into an existing page in the admin dashboard.

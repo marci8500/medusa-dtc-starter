@@ -152,6 +152,48 @@ The storefront is configured via environment variables in `apps/storefront/.env.
 | `NEXT_PUBLIC_BASE_URL` | Base URL of the storefront | `https://localhost:8000` |
 | `NEXT_PUBLIC_STRIPE_KEY` | Stripe publishable key (optional) | — |
 
+## Stripe
+
+Stripe is registered in the Medusa payment module when `STRIPE_API_KEY` is set. The storefront checkout UI already supports `pp_stripe_stripe`.
+
+### Environment variables
+
+**Backend** (`apps/backend/.env`):
+
+| Variable | Description |
+|----------|-------------|
+| `STRIPE_API_KEY` | Stripe secret API key |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
+
+**Storefront** (`apps/storefront/.env.local`):
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_STRIPE_KEY` | Stripe publishable API key |
+
+Restart the backend after setting keys so the Stripe provider loads.
+
+### Enable in a region
+
+Fresh seeds include `pp_stripe_stripe` on the Europe region when `STRIPE_API_KEY` is set. For an existing database, enable it in Admin → Settings → Regions → edit the region → add **Stripe** (`pp_stripe_stripe`).
+
+### Webhooks
+
+Create a webhook endpoint in the [Stripe Dashboard](https://dashboard.stripe.com/webhooks) pointing to:
+
+```text
+{MEDUSA_BACKEND_URL}/hooks/payment/stripe_stripe
+```
+
+Subscribe to these events:
+
+- `payment_intent.amount_capturable_updated`
+- `payment_intent.succeeded`
+- `payment_intent.payment_failed`
+- `payment_intent.partially_funded`
+
+Copy the signing secret into `STRIPE_WEBHOOK_SECRET`.
+
 ## Resources
 
 - [Medusa Documentation](https://docs.medusajs.com)

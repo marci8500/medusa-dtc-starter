@@ -46,5 +46,31 @@
       "wrong_number": "Rossz szám",
       "failed": "Sikertelen"
     }
+  },
+  "foxpost": {
+    "title": "Foxpost automata",
+    "lockerName": "Automata neve",
+    "lockerAddress": "Automata címe",
+    "lockerId": "Automata ID",
+    "placeId": "Place ID"
+  },
+  "codFees": {
+    "title": "Utánvéti díjak",
+    "description": "Állítsd be az utánvéti díjat szállítási opció (futár) szerint. Üresen hagyva vagy 0-val nincs díj.",
+    "refresh": "Frissítés",
+    "loading": "Betöltés…",
+    "loadError": "Nem sikerült betölteni a szállítási opciókat.",
+    "retry": "Újra",
+    "empty": "Nincs szállítási opció.",
+    "save": "Mentés",
+    "saved": "Utánvéti díj mentve",
+    "saveError": "Nem sikerült menteni az utánvéti díjat.",
+    "invalidFee": "Adj meg egy érvényes, nem negatív számot.",
+    "columns": {
+      "name": "Szállítási opció",
+      "type": "Típus",
+      "fee": "Utánvéti díj",
+      "actions": ""
+    }
   }
 }
