@@ -183,7 +183,9 @@ const LeadsPage = () => {
         body: JSON.stringify({ status }),
       }),
     onSuccess: (result) => {
-      setSelected(result.lead)
+      setSelected((current) =>
+        current?.id === result.lead.id ? result.lead : current
+      )
       queryClient.invalidateQueries({ queryKey: ["admin-leads"] })
       toast.success(t("leads.statusSaved"))
     },
@@ -191,6 +193,14 @@ const LeadsPage = () => {
       toast.error(t("leads.statusSaveError"))
     },
   })
+
+  const savingStatusId = statusMutation.isPending
+    ? statusMutation.variables?.id
+    : undefined
+
+  const updateLeadStatus = (id: string, status: LeadStatus) => {
+    statusMutation.mutate({ id, status })
+  }
 
   const convertMutation = useMutation({
     mutationFn: (id: string) =>
@@ -356,9 +366,30 @@ const LeadsPage = () => {
                       <Text size="small">{lead.customer_name ?? "—"}</Text>
                     </Table.Cell>
                     <Table.Cell>
-                      <Badge size="2xsmall">
-                        {statusLabel(lead.status ?? "waiting")}
-                      </Badge>
+                      <div
+                        className="min-w-[160px]"
+                        onClick={(event) => event.stopPropagation()}
+                        onMouseDown={(event) => event.stopPropagation()}
+                      >
+                        <Select
+                          value={lead.status ?? "waiting"}
+                          disabled={savingStatusId === lead.id}
+                          onValueChange={(value) => {
+                            updateLeadStatus(lead.id, value as LeadStatus)
+                          }}
+                        >
+                          <Select.Trigger>
+                            <Select.Value />
+                          </Select.Trigger>
+                          <Select.Content>
+                            {LEAD_STATUSES.map((status) => (
+                              <Select.Item key={status} value={status}>
+                                {statusLabel(status)}
+                              </Select.Item>
+                            ))}
+                          </Select.Content>
+                        </Select>
+                      </div>
                     </Table.Cell>
                     <Table.Cell>
                       <div className="flex flex-col gap-y-1">
@@ -449,12 +480,9 @@ const LeadsPage = () => {
                   </Text>
                   <Select
                     value={selected.status ?? "waiting"}
-                    disabled={statusMutation.isPending}
+                    disabled={savingStatusId === selected.id}
                     onValueChange={(value) => {
-                      statusMutation.mutate({
-                        id: selected.id,
-                        status: value as LeadStatus,
-                      })
+                      updateLeadStatus(selected.id, value as LeadStatus)
                     }}
                   >
                     <Select.Trigger>
@@ -468,7 +496,7 @@ const LeadsPage = () => {
                       ))}
                     </Select.Content>
                   </Select>
-                  {statusMutation.isPending ? (
+                  {savingStatusId === selected.id ? (
                     <Text size="small" className="text-ui-fg-muted">
                       {t("leads.savingStatus")}
                     </Text>
