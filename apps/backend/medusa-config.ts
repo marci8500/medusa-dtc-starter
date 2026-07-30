@@ -78,6 +78,8 @@ module.exports = defineConfig({
                     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
                     // Required for Apple Pay / Google Pay in Payment Element
                     automaticPaymentMethods: true,
+                    // Automatic capture — wallets like Revolut Pay need this to appear
+                    capture: true,
                   },
                 },
               ]
