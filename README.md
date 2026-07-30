@@ -156,6 +156,8 @@ The storefront is configured via environment variables in `apps/storefront/.env.
 
 Stripe is registered in the Medusa payment module when `STRIPE_API_KEY` is set. The storefront checkout UI already supports `pp_stripe_stripe`.
 
+For Apple Pay / Google Pay, set `automaticPaymentMethods: true` on the Stripe provider in `medusa-config.ts` (and restart). Also register the storefront domain under Stripe → Settings → Payment method domains.
+
 ### Environment variables
 
 **Backend** (`apps/backend/.env`):

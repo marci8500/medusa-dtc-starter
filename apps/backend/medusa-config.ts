@@ -76,6 +76,8 @@ module.exports = defineConfig({
                   options: {
                     apiKey: process.env.STRIPE_API_KEY,
                     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+                    // Required for Apple Pay / Google Pay in Payment Element
+                    automaticPaymentMethods: true,
                   },
                 },
               ]
