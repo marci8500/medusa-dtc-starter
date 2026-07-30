@@ -100,6 +100,9 @@ export async function updateCodFeeForShippingOption(
   try {
     config = normalizeCodFeeConfigInput(input)
   } catch (error) {
+    if (error instanceof MedusaError) {
+      throw error
+    }
     throw new MedusaError(
       MedusaError.Types.INVALID_DATA,
       error instanceof Error ? error.message : String(error)

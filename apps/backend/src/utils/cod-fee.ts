@@ -1,3 +1,5 @@
+import { MedusaError } from "@medusajs/framework/utils"
+
 /**
  * Cash on Delivery fee stored on shipping option metadata and applied
  * as a custom cart line item when COD payment is selected.
@@ -175,7 +177,6 @@ export type CodFeeConfigInput = {
 
 /**
  * Validate and normalize an Admin update payload.
- * Throws Error with message on invalid input (caller maps to MedusaError).
  */
 export function normalizeCodFeeConfigInput(
   input: CodFeeConfigInput
@@ -185,7 +186,10 @@ export function normalizeCodFeeConfigInput(
   let flat_fee: number | null = null
   if (input.cod_fee != null) {
     if (!Number.isFinite(input.cod_fee) || input.cod_fee < 0) {
-      throw new Error("cod_fee must be a non-negative number or null")
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        "cod_fee must be a non-negative number or null"
+      )
     }
     flat_fee = input.cod_fee > 0 ? input.cod_fee : null
   }
@@ -193,13 +197,17 @@ export function normalizeCodFeeConfigInput(
   const tiers = sortCodFeeTiers(
     (input.cod_fee_tiers ?? []).map((tier) => {
       if (!Number.isFinite(tier.fee) || tier.fee < 0) {
-        throw new Error("Each tier fee must be a non-negative number")
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          "Each tier fee must be a non-negative number"
+        )
       }
       if (
         tier.max_amount != null &&
         (!Number.isFinite(tier.max_amount) || tier.max_amount < 0)
       ) {
-        throw new Error(
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
           "Each tier max_amount must be a non-negative number or null"
         )
       }
@@ -212,7 +220,10 @@ export function normalizeCodFeeConfigInput(
 
   const openEnded = tiers.filter((t) => t.max_amount == null)
   if (openEnded.length > 1) {
-    throw new Error("At most one open-ended tier (empty max amount) is allowed")
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      "At most one open-ended tier (empty max amount) is allowed"
+    )
   }
 
   for (let i = 1; i < tiers.length; i++) {
@@ -220,13 +231,19 @@ export function normalizeCodFeeConfigInput(
     const curr = tiers[i]
     if (prev.max_amount != null && curr.max_amount != null) {
       if (curr.max_amount <= prev.max_amount) {
-        throw new Error("Tier max amounts must be strictly ascending")
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          "Tier max amounts must be strictly ascending"
+        )
       }
     }
   }
 
   if (mode === "tiers" && tiers.length === 0) {
-    throw new Error("At least one tier is required when mode is tiers")
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      "At least one tier is required when mode is tiers"
+    )
   }
 
   return { mode, flat_fee, tiers }

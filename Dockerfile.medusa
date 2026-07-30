@@ -7,6 +7,10 @@ WORKDIR /workspace
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PNPM_HOME=/usr/local/share/pnpm
 ENV PATH=${PNPM_HOME}:${PATH}
+# Soften npm registry rate limits during Docker builds (Dokploy may bake multiple targets).
+ENV npm_config_fetch_retries=5
+ENV npm_config_fetch_retry_mintimeout=20000
+ENV npm_config_fetch_retry_maxtimeout=120000
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -49,10 +53,22 @@ packageJson.packageManager = 'pnpm@10.11.1'; \
 fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + '\n'); \
 "
 
-RUN --mount=type=cache,id=pnpm-production-store,target=/root/.local/share/pnpm/store \
-    pnpm install \
-      --prod \
-      --no-frozen-lockfile
+# Reuse the same store cache as the earlier install so packages are mostly offline.
+# Retry on transient registry 429s.
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+    set -eu; \
+    attempt=1; \
+    max_attempts=5; \
+    until pnpm install --prod --no-frozen-lockfile --prefer-offline; do \
+      if [ "$attempt" -ge "$max_attempts" ]; then \
+        echo "ERROR: pnpm production install failed after ${max_attempts} attempts"; \
+        exit 1; \
+      fi; \
+      sleep_seconds=$((attempt * 20)); \
+      echo "pnpm install failed (attempt ${attempt}/${max_attempts}); retrying in ${sleep_seconds}s..."; \
+      attempt=$((attempt + 1)); \
+      sleep "$sleep_seconds"; \
+    done
 
 RUN mkdir -p /server/static
 
